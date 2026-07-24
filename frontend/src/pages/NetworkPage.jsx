@@ -1,18 +1,28 @@
 import { useState, useEffect } from 'react'
-import { getNetwork } from '../utils/api.js'
+import { getNetwork, getMap } from '../utils/api.js'
 import NetworkGraph from '../components/NetworkGraph.jsx'
 import { Network, Search, Link, Map as MapIcon } from 'lucide-react'
+import { MapContainer, TileLayer, CircleMarker, Tooltip } from 'react-leaflet'
+import 'leaflet/dist/leaflet.css'
 
 export default function NetworkPage() {
   const [network, setNetwork] = useState({ nodes: [], edges: [] })
   const [loading, setLoading] = useState(true)
   const [selectedNode, setSelectedNode] = useState(null)
+  
+  const [mapData, setMapData] = useState([])
+  const [mapLoading, setMapLoading] = useState(true)
 
   useEffect(() => {
     getNetwork({}).then(res => {
       setNetwork(res.data.data || { nodes: [], edges: [] })
       setLoading(false)
     }).catch(() => setLoading(false))
+
+    getMap({}).then(res => {
+      setMapData(res.data.data || [])
+      setMapLoading(false)
+    }).catch(() => setMapLoading(false))
   }, [])
 
   const connectedEdges = selectedNode 
@@ -86,11 +96,27 @@ export default function NetworkPage() {
               <div className="card-subtitle">Karnataka Regional Topology</div>
             </div>
           </div>
-          <div className="card-body" style={{ padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', position: 'relative' }}>
-             <img src="/karnataka_map.png" alt="Karnataka Map" style={{ width: '100%', height: '100%', objectFit: 'contain' }} onError={(e) => e.target.style.display = 'none'} />
-             <div className="text-muted" style={{ position: 'absolute', zIndex: -1, textAlign: 'center', padding: 20 }}>
-               Map image not found.<br/>Please save your uploaded map as<br/><code>public/karnataka_map.png</code>
-             </div>
+          <div className="card-body" style={{ padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', position: 'relative', flex: 1, minHeight: 400 }}>
+             {mapLoading ? (
+               <div className="empty"><div className="spinner spinner-md" /></div>
+             ) : (
+               <MapContainer center={[15.3173, 75.7139]} zoom={6} style={{ height: '100%', width: '100%', minHeight: 400, zIndex: 1 }}>
+                 <TileLayer 
+                   url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" 
+                   attribution='&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a>'
+                 />
+                 {mapData.map((pt, i) => (
+                   <CircleMarker 
+                     key={i} 
+                     center={[pt.lat, pt.lon]} 
+                     radius={5} 
+                     pathOptions={{ color: '#ef4444', fillColor: '#ef4444', fillOpacity: 0.8, weight: 1 }}
+                   >
+                     <Tooltip>{pt.crime_group} - {pt.district}</Tooltip>
+                   </CircleMarker>
+                 ))}
+               </MapContainer>
+             )}
           </div>
         </div>
       </div>
