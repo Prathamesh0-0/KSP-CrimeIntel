@@ -37,6 +37,12 @@ function BarViz({ data }) {
   const labelKey = data[0].district ? 'district' : data[0].crime_group ? 'crime_group' : data[0].month ? 'month' : data[0].category ? 'category' : data[0].mode ? 'mode' : Object.keys(data[0])[0]
   const valueKey = numKeys[0] || 'cases'
 
+  // Detect skew: if max > 5x median, use log scale
+  const vals = data.map(d => d[valueKey]).filter(v => v > 0).sort((a, b) => a - b)
+  const median = vals.length > 0 ? vals[Math.floor(vals.length / 2)] : 1
+  const maxVal = vals.length > 0 ? vals[vals.length - 1] : 1
+  const useLog = vals.length > 3 && maxVal > 5 * median
+
   return (
     <ResponsiveContainer width="100%" height={260}>
       <BarChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 60 }}>
@@ -46,7 +52,13 @@ function BarViz({ data }) {
           tick={{ fill: 'var(--text-muted)', fontSize: 10, fontFamily: 'var(--font-sans)' }}
           angle={-35} textAnchor="end" interval={0} tickMargin={5}
         />
-        <YAxis tick={{ fill: 'var(--text-muted)', fontSize: 10, fontFamily: 'var(--font-mono)' }} tickFormatter={v => v >= 1000 ? `${(v/1000).toFixed(0)}k` : v} />
+        <YAxis
+          scale={useLog ? 'log' : 'auto'}
+          domain={useLog ? ['auto', 'auto'] : [0, 'auto']}
+          allowDataOverflow={useLog}
+          tick={{ fill: 'var(--text-muted)', fontSize: 10, fontFamily: 'var(--font-mono)' }}
+          tickFormatter={v => v >= 1000 ? `${(v/1000).toFixed(0)}k` : v}
+        />
         <Tooltip
           contentStyle={{ background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: 6, fontSize: 11, fontFamily: 'var(--font-sans)' }}
           labelStyle={{ color: 'var(--text-secondary)', fontWeight: 600 }}

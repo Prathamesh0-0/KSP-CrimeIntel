@@ -25,12 +25,25 @@ function KpiCard({ label, value, sub, colorClass, icon: Icon }) {
 
 function MiniBarChart({ data, xKey, yKey, height = 200 }) {
   if (!data?.length) return <div className="empty" style={{ height }}><div className="empty-desc">Loading…</div></div>
+  
+  // Detect skew: if max > 5x median, use log scale
+  const vals = data.map(d => d[yKey]).filter(v => v > 0).sort((a, b) => a - b)
+  const median = vals.length > 0 ? vals[Math.floor(vals.length / 2)] : 1
+  const maxVal = vals.length > 0 ? vals[vals.length - 1] : 1
+  const useLog = vals.length > 3 && maxVal > 5 * median
+
   return (
     <ResponsiveContainer width="100%" height={height}>
       <BarChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 50 }}>
         <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
         <XAxis dataKey={xKey} tick={{ fill:'var(--text-muted)', fontSize:10, fontFamily:'var(--font-sans)' }} angle={-35} textAnchor="end" interval={0} tickMargin={5} />
-        <YAxis tick={{ fill:'var(--text-muted)', fontSize:10, fontFamily:'var(--font-mono)' }} tickFormatter={v => v >= 1000 ? `${(v/1000).toFixed(0)}k` : v} />
+        <YAxis
+          scale={useLog ? 'log' : 'auto'}
+          domain={useLog ? ['auto', 'auto'] : [0, 'auto']}
+          allowDataOverflow={useLog}
+          tick={{ fill:'var(--text-muted)', fontSize:10, fontFamily:'var(--font-mono)' }}
+          tickFormatter={v => v >= 1000 ? `${(v/1000).toFixed(0)}k` : v}
+        />
         <Tooltip contentStyle={{ background:'var(--bg-surface)', border:'1px solid var(--border)', borderRadius:6, fontSize:11, fontFamily:'var(--font-sans)' }} itemStyle={{ fontFamily:'var(--font-mono)' }} />
         <Bar dataKey={yKey} radius={[2,2,0,0]} maxBarSize={28}>
           {data.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}

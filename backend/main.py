@@ -47,7 +47,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-DATA_DIR = os.getenv("DATA_DIR", r"C:\Projects\DATATHON\DataSet")
+DEFAULT_DATA_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "DataSet"))
+DATA_DIR = os.getenv("DATA_DIR", DEFAULT_DATA_DIR)
 
 logger.info("Initialising data engine — may take 20-40 s for first-time CSV indexing …")
 data_engine  = CrimeDataEngine(DATA_DIR)
@@ -281,11 +282,13 @@ async def create_user(req: UserCreate, token: str = Depends(oauth2)):
         raise HTTPException(status_code=403, detail="Admin privileges required")
     
     import uuid
+    import hashlib
     user_id = f"USR-{str(uuid.uuid4())[:6].upper()}"
+    pw_hash = hashlib.sha256(req.password.encode()).hexdigest()
     try:
         data_engine.conn.execute(
             "INSERT INTO users (id, username, password_hash, role, badge) VALUES (?, ?, ?, ?, ?)",
-            (user_id, req.username.lower(), req.password, req.role.lower(), req.badge)
+            (user_id, req.username.lower(), pw_hash, req.role.lower(), req.badge)
         )
         log_action(user, "CREATE_USER", f"Created {req.username}")
         return {"status": "success", "message": "User created successfully"}
@@ -383,7 +386,11 @@ class FIRData(BaseModel):
     lon: float
 
 @app.post("/api/fir/register", tags=["Data"])
-async def register_fir(data: FIRData):
+async def register_fir(data: FIRData, token: str = Depends(oauth2)):
+    user = auth_manager.get_current_user(token) if token else None
+    if not user:
+        raise HTTPException(status_code=401, detail="Authentication required to register FIR")
+    log_action(user, "REGISTER_FIR", f"{data.crime_group} in {data.district}")
     success = data_engine.register_fir(data.dict())
     if success:
         return {"status": "success", "message": "FIR registered successfully"}
@@ -397,17 +404,7 @@ async def districts():
 async def crime_groups():
     return {"crime_groups": data_engine.get_all_crime_groups()}
 
-@app.get("/api/analytics/offenders", tags=["Analytics"])
-async def offenders():
-    return {"data": []}
 
-@app.get("/api/analytics/alerts", tags=["Analytics"])
-async def alerts():
-    return {"data": []}
-
-@app.get("/api/audit", tags=["Analytics"])
-async def audit():
-    return {"data": []}
 # ─────────────────────── WebSocket ───────────────────────────────
 
 @app.websocket("/ws/chat")

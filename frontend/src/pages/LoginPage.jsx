@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth.jsx'
-import { Shield, Eye, EyeOff, Lock, User, Terminal } from 'lucide-react'
+import { Shield, Eye, EyeOff, Lock, User } from 'lucide-react'
 
 export default function LoginPage() {
   const { login } = useAuth()
@@ -20,261 +20,265 @@ export default function LoginPage() {
       await login(username, password)
       navigate('/chat')
     } catch (err) {
-      setError('ACCESS DENIED: Invalid Credentials.')
+      setError('Invalid username or password. Please try again.')
     } finally {
       setLoading(false)
     }
   }
 
   return (
-    <div className="login-page" style={{
+    <div style={{
       minHeight: '100vh',
       display: 'flex',
+      flexDirection: 'column',
       alignItems: 'center',
       justifyContent: 'center',
-      background: 'radial-gradient(circle at center, #0B0F19 0%, #030712 100%)',
+      background: '#f0f2f5',
+      fontFamily: "'Inter', 'Segoe UI', system-ui, sans-serif",
       padding: '24px',
-      position: 'relative',
-      overflow: 'hidden',
-      fontFamily: 'var(--font-sans)'
     }}>
-      {/* Background cyber grid effect */}
+      {/* Main card */}
       <div style={{
-        position: 'absolute',
-        top: 0, left: 0, right: 0, bottom: 0,
-        backgroundImage: 'linear-gradient(rgba(15, 23, 42, 0.3) 1px, transparent 1px), linear-gradient(90deg, rgba(15, 23, 42, 0.3) 1px, transparent 1px)',
-        backgroundSize: '30px 30px',
-        opacity: 0.8,
-        pointerEvents: 'none'
-      }} />
-
-      {/* Decorative ambient glow */}
-      <div style={{
-        position: 'absolute',
-        top: '20%', left: '15%',
-        width: '300px', height: '300px',
-        background: 'radial-gradient(circle, rgba(14, 165, 233, 0.15) 0%, transparent 70%)',
-        filter: 'blur(50px)',
-        pointerEvents: 'none'
-      }} />
-      <div style={{
-        position: 'absolute',
-        bottom: '20%', right: '15%',
-        width: '350px', height: '350px',
-        background: 'radial-gradient(circle, rgba(99, 102, 241, 0.12) 0%, transparent 70%)',
-        filter: 'blur(60px)',
-        pointerEvents: 'none'
-      }} />
-
-      <div className="login-card" style={{
         width: '100%',
-        maxWidth: '420px',
-        background: 'rgba(17, 24, 39, 0.75)',
-        backdropFilter: 'blur(20px)',
-        WebkitBackdropFilter: 'blur(20px)',
-        border: '1px solid rgba(14, 165, 233, 0.15)',
-        borderRadius: '16px',
-        boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.6), 0 0 40px rgba(14, 165, 233, 0.05)',
+        maxWidth: '440px',
+        background: '#fff',
+        borderRadius: '8px',
+        boxShadow: '0 2px 12px rgba(0,0,0,0.1)',
         overflow: 'hidden',
-        zIndex: 10,
-        position: 'relative'
       }}>
-        {/* Subtle top indicator bar */}
+        {/* Navy header band */}
         <div style={{
-          height: '3px',
-          width: '100%',
-          background: 'linear-gradient(90deg, #0ea5e9, #6366f1)'
-        }} />
-
-        <div className="login-head" style={{
-          padding: '40px 32px 24px',
+          background: 'linear-gradient(135deg, #1a237e 0%, #283593 100%)',
+          padding: '32px 32px 28px',
           textAlign: 'center',
-          borderBottom: '1px solid rgba(255, 255, 255, 0.04)'
+          position: 'relative',
         }}>
-          <div className="login-emblem" style={{
-            width: '84px',
-            height: '84px',
-            background: 'rgba(15, 23, 42, 0.8)',
-            border: '1.5px solid rgba(14, 165, 233, 0.3)',
-            borderRadius: '50%',
+          {/* Subtle Karnataka emblem pattern */}
+          <div style={{
+            position: 'absolute',
+            top: 0, left: 0, right: 0, bottom: 0,
+            backgroundImage: 'radial-gradient(circle at 20% 80%, rgba(255,255,255,0.03) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(255,255,255,0.03) 0%, transparent 50%)',
+            pointerEvents: 'none',
+          }} />
+
+          {/* Logo */}
+          <div style={{
+            width: '80px',
+            height: '80px',
+            margin: '0 auto 16px',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            margin: '0 auto 20px',
-            boxShadow: '0 0 20px rgba(14, 165, 233, 0.15)',
-            transition: 'transform 0.3s ease'
+            background: 'rgba(255,255,255,0.12)',
+            borderRadius: '12px',
+            border: '2px solid rgba(255,255,255,0.2)',
           }}>
-            <img src="/logo.png" alt="KSP Logo" style={{ width: 68, height: 68, objectFit: 'contain' }} />
+            <img
+              src="/logo.png"
+              alt="Karnataka State Police"
+              style={{
+                width: '64px',
+                height: '64px',
+                objectFit: 'contain',
+              }}
+            />
           </div>
-          <h2 style={{
-            fontFamily: 'var(--font-mono)',
-            fontSize: '20px',
+
+          <h1 style={{
+            fontSize: '18px',
             fontWeight: 700,
-            color: '#FFFFFF',
-            letterSpacing: '1.5px',
-            margin: 0
-          }}>KSP CRIMEINTEL</h2>
+            color: '#fff',
+            margin: '0 0 4px',
+            letterSpacing: '0.5px',
+          }}>Karnataka State Police</h1>
           <p style={{
-            fontSize: '11px',
-            color: 'rgba(14, 165, 233, 0.7)',
-            textTransform: 'uppercase',
-            letterSpacing: '1px',
-            marginTop: '6px',
-            fontWeight: 600
-          }}>Secure Analytics & Intelligence Portal</p>
+            fontSize: '12px',
+            color: 'rgba(255,255,255,0.7)',
+            margin: 0,
+            fontWeight: 500,
+            letterSpacing: '0.3px',
+          }}>Crime Intelligence & Analytics Portal</p>
         </div>
 
-        <div className="login-body" style={{ padding: '32px' }}>
-          <form className="login-form" onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-            <div className="login-input-wrap" style={{
-              background: 'rgba(3, 7, 18, 0.6)',
-              border: '1px solid rgba(255, 255, 255, 0.08)',
-              borderRadius: '8px',
-              display: 'flex',
-              alignItems: 'center',
-              padding: '2px 14px',
-              transition: 'all 0.2s ease'
-            }}>
-              <User size={16} style={{ color: 'rgba(14, 165, 233, 0.5)', marginRight: '10px' }} />
-              <input
-                id="login-username"
-                className="login-field"
-                value={username}
-                onChange={e => setUsername(e.target.value)}
-                placeholder="Username / Badge ID"
-                autoComplete="username"
-                required
-                style={{
-                  flex: 1,
-                  background: 'transparent',
-                  border: 'none',
-                  outline: 'none',
-                  color: '#FFFFFF',
-                  fontSize: '14px',
-                  padding: '12px 0',
-                  caretColor: '#0ea5e9'
-                }}
-              />
-            </div>
+        {/* Form body */}
+        <div style={{ padding: '32px' }}>
+          <p style={{
+            fontSize: '14px',
+            color: '#37474f',
+            marginBottom: '24px',
+            fontWeight: 500,
+          }}>Sign in to continue</p>
 
-            <div className="login-input-wrap" style={{
-              background: 'rgba(3, 7, 18, 0.6)',
-              border: '1px solid rgba(255, 255, 255, 0.08)',
-              borderRadius: '8px',
-              display: 'flex',
-              alignItems: 'center',
-              padding: '2px 14px',
-              position: 'relative',
-              transition: 'all 0.2s ease'
-            }}>
-              <Lock size={16} style={{ color: 'rgba(14, 165, 233, 0.5)', marginRight: '10px' }} />
-              <input
-                id="login-password"
-                className="login-field"
-                type={showPw ? 'text' : 'password'}
-                value={password}
-                onChange={e => setPassword(e.target.value)}
-                placeholder="Secure Access Key"
-                autoComplete="current-password"
-                required
-                style={{
-                  flex: 1,
-                  background: 'transparent',
-                  border: 'none',
-                  outline: 'none',
-                  color: '#FFFFFF',
-                  fontSize: '14px',
-                  padding: '12px 30px 12px 0',
-                  caretColor: '#0ea5e9'
-                }}
-              />
-              <button
-                type="button"
-                onClick={() => setShowPw(v => !v)}
-                style={{
-                  position: 'absolute',
-                  right: '14px',
-                  background: 'none',
-                  border: 'none',
-                  color: 'rgba(14, 165, 233, 0.5)',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center'
-                }}
-              >
-                {showPw ? <EyeOff size={16} /> : <Eye size={16} />}
-              </button>
-            </div>
-
-            {error && (
-              <div className="login-error" style={{
+          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            {/* Username */}
+            <div>
+              <label htmlFor="login-username" style={{
+                display: 'block',
                 fontSize: '12px',
-                color: '#ef4444',
-                background: 'rgba(239, 68, 68, 0.08)',
-                border: '1px solid rgba(239, 68, 68, 0.2)',
+                fontWeight: 600,
+                color: '#546e7a',
+                marginBottom: '6px',
+                textTransform: 'uppercase',
+                letterSpacing: '0.5px',
+              }}>Username / Badge ID</label>
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                border: '1.5px solid #cfd8dc',
                 borderRadius: '6px',
-                padding: '8px 12px',
+                transition: 'border-color 0.2s',
+                background: '#fafafa',
+              }}>
+                <User size={16} style={{ color: '#90a4ae', marginLeft: '12px', flexShrink: 0 }} />
+                <input
+                  id="login-username"
+                  value={username}
+                  onChange={e => setUsername(e.target.value)}
+                  placeholder="Enter your username"
+                  autoComplete="username"
+                  required
+                  style={{
+                    flex: 1,
+                    background: 'transparent',
+                    border: 'none',
+                    outline: 'none',
+                    color: '#263238',
+                    fontSize: '14px',
+                    padding: '12px 12px',
+                  }}
+                />
+              </div>
+            </div>
+
+            {/* Password */}
+            <div>
+              <label htmlFor="login-password" style={{
+                display: 'block',
+                fontSize: '12px',
+                fontWeight: 600,
+                color: '#546e7a',
+                marginBottom: '6px',
+                textTransform: 'uppercase',
+                letterSpacing: '0.5px',
+              }}>Password</label>
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                border: '1.5px solid #cfd8dc',
+                borderRadius: '6px',
+                transition: 'border-color 0.2s',
+                background: '#fafafa',
+                position: 'relative',
+              }}>
+                <Lock size={16} style={{ color: '#90a4ae', marginLeft: '12px', flexShrink: 0 }} />
+                <input
+                  id="login-password"
+                  type={showPw ? 'text' : 'password'}
+                  value={password}
+                  onChange={e => setPassword(e.target.value)}
+                  placeholder="Enter your password"
+                  autoComplete="current-password"
+                  required
+                  style={{
+                    flex: 1,
+                    background: 'transparent',
+                    border: 'none',
+                    outline: 'none',
+                    color: '#263238',
+                    fontSize: '14px',
+                    padding: '12px 12px 12px 12px',
+                    paddingRight: '40px',
+                  }}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPw(v => !v)}
+                  style={{
+                    position: 'absolute',
+                    right: '12px',
+                    background: 'none',
+                    border: 'none',
+                    color: '#90a4ae',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    padding: '4px',
+                  }}
+                >
+                  {showPw ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
+              </div>
+            </div>
+
+            {/* Error message */}
+            {error && (
+              <div style={{
+                fontSize: '13px',
+                color: '#c62828',
+                background: '#ffebee',
+                border: '1px solid #ef9a9a',
+                borderRadius: '6px',
+                padding: '10px 14px',
                 display: 'flex',
                 alignItems: 'center',
                 gap: '8px',
-                justifyContent: 'center'
               }}>
                 <Shield size={14} />
                 <span>{error}</span>
               </div>
             )}
 
+            {/* Submit */}
             <button
               id="login-btn"
               type="submit"
               disabled={loading}
               style={{
                 width: '100%',
-                padding: '14px',
-                background: 'linear-gradient(90deg, #0ea5e9, #2563eb)',
-                color: '#FFFFFF',
+                padding: '13px',
+                background: loading ? '#5c6bc0' : '#1a237e',
+                color: '#fff',
                 border: 'none',
-                borderRadius: '8px',
+                borderRadius: '6px',
                 fontSize: '14px',
                 fontWeight: 600,
-                cursor: 'pointer',
-                transition: 'all 0.25s ease',
-                boxShadow: '0 4px 12px rgba(14, 165, 233, 0.2)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '8px',
-                marginTop: '8px'
+                cursor: loading ? 'wait' : 'pointer',
+                transition: 'background 0.2s',
+                marginTop: '4px',
+                letterSpacing: '0.3px',
               }}
+              onMouseEnter={e => { if (!loading) e.target.style.background = '#283593' }}
+              onMouseLeave={e => { if (!loading) e.target.style.background = '#1a237e' }}
             >
-              {loading ? (
-                <>
-                  <span className="spinner spinner-sm" style={{ borderColor: 'rgba(255,255,255,0.3)', borderTopColor: '#fff' }} />
-                  <span>DECRYPTING CREDENTIALS...</span>
-                </>
-              ) : (
-                <>
-                  <Terminal size={16} />
-                  <span>AUTHORIZE ACCESS</span>
-                </>
-              )}
+              {loading ? 'Signing in…' : 'Sign In'}
             </button>
           </form>
         </div>
 
-        <div className="login-footer" style={{
-          padding: '16px 32px',
-          borderTop: '1px solid rgba(255, 255, 255, 0.04)',
-          background: 'rgba(3, 7, 18, 0.4)',
-          fontSize: '9px',
-          color: 'rgba(255, 255, 255, 0.3)',
+        {/* Footer */}
+        <div style={{
+          padding: '14px 32px',
+          borderTop: '1px solid #eceff1',
+          background: '#fafafa',
+          fontSize: '10px',
+          color: '#90a4ae',
           textAlign: 'center',
-          letterSpacing: '0.8px',
-          lineHeight: '1.4'
+          lineHeight: '1.5',
+          letterSpacing: '0.3px',
         }}>
-          WARNING: UNAUTHORIZED USE OF THIS SYSTEM IS STRICTLY PROHIBITED AND SUBJECT TO CRIMINAL PROSECUTION UNDER THE INFORMATION TECHNOLOGY ACT.
+          Authorised personnel only. Unauthorised access is an offence under the Information Technology Act, 2000.
         </div>
       </div>
+
+      {/* Below-card branding */}
+      <p style={{
+        marginTop: '20px',
+        fontSize: '11px',
+        color: '#90a4ae',
+        textAlign: 'center',
+      }}>
+        KSP CrimeIntel v1.0 — Karnataka State Police
+      </p>
     </div>
   )
 }

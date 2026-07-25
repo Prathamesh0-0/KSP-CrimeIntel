@@ -15,8 +15,17 @@ from dataclasses import dataclass, field
 import numpy as np
 from scipy import stats
 import random
+import re
 
 logger = logging.getLogger(__name__)
+
+
+def _sanitize(val: str) -> str:
+    """Sanitize user input to prevent SQL injection.
+    Strips all characters except alphanumeric, spaces, hyphens, dots, and underscores."""
+    if val is None:
+        return None
+    return re.sub(r"[^\w\s\-\.]", "", str(val).strip())[:100]
 
 
 @dataclass
@@ -282,9 +291,11 @@ class CrimeDataEngine:
                      year: Optional[int] = None, top_n: int = 15) -> QueryResult:
         conds = ["district IS NOT NULL"]
         if crime_type:
-            conds.append(f"(LOWER(crime_group) LIKE LOWER('%{crime_type}%') OR LOWER(crime_head) LIKE LOWER('%{crime_type}%'))")
+            ct = _sanitize(crime_type)
+            conds.append(f"(LOWER(crime_group) LIKE LOWER('%{ct}%') OR LOWER(crime_head) LIKE LOWER('%{ct}%'))")
         if year:
-            conds.append(f"year = {year}")
+            conds.append(f"year = {int(year)}")
+        top_n = min(int(top_n), 50)
         where = " AND ".join(conds)
 
         try:
@@ -313,11 +324,13 @@ class CrimeDataEngine:
     def get_trends(self, crime_type: Optional[str] = None,
                    district: Optional[str] = None,
                    year_start: int = 2016, year_end: int = 2023) -> QueryResult:
-        conds = [f"year BETWEEN {year_start} AND {year_end}", "year IS NOT NULL"]
+        conds = [f"year BETWEEN {int(year_start)} AND {int(year_end)}", "year IS NOT NULL"]
         if crime_type:
-            conds.append(f"(LOWER(crime_group) LIKE LOWER('%{crime_type}%') OR LOWER(crime_head) LIKE LOWER('%{crime_type}%'))")
+            ct = _sanitize(crime_type)
+            conds.append(f"(LOWER(crime_group) LIKE LOWER('%{ct}%') OR LOWER(crime_head) LIKE LOWER('%{ct}%'))")
         if district:
-            conds.append(f"LOWER(district) LIKE LOWER('%{district}%')")
+            d = _sanitize(district)
+            conds.append(f"LOWER(district) LIKE LOWER('%{d}%')")
         where = " AND ".join(conds)
 
         try:
@@ -345,9 +358,11 @@ class CrimeDataEngine:
                                 year: Optional[int] = None, top_n: int = 10) -> QueryResult:
         conds = ["district IS NOT NULL"]
         if crime_type:
-            conds.append(f"(LOWER(crime_group) LIKE LOWER('%{crime_type}%') OR LOWER(crime_head) LIKE LOWER('%{crime_type}%'))")
+            ct = _sanitize(crime_type)
+            conds.append(f"(LOWER(crime_group) LIKE LOWER('%{ct}%') OR LOWER(crime_head) LIKE LOWER('%{ct}%'))")
         if year:
-            conds.append(f"year = {year}")
+            conds.append(f"year = {int(year)}")
+        top_n = min(int(top_n), 30)
         where = " AND ".join(conds)
 
         try:
@@ -376,9 +391,10 @@ class CrimeDataEngine:
                             year: Optional[int] = None) -> QueryResult:
         conds = ["crime_group IS NOT NULL"]
         if district:
-            conds.append(f"LOWER(district) LIKE LOWER('%{district}%')")
+            d = _sanitize(district)
+            conds.append(f"LOWER(district) LIKE LOWER('%{d}%')")
         if year:
-            conds.append(f"year = {year}")
+            conds.append(f"year = {int(year)}")
         where = " AND ".join(conds)
 
         try:
@@ -406,11 +422,13 @@ class CrimeDataEngine:
                   7:"Jul",8:"Aug",9:"Sep",10:"Oct",11:"Nov",12:"Dec"}
         conds = ["month BETWEEN 1 AND 12"]
         if district:
-            conds.append(f"LOWER(district) LIKE LOWER('%{district}%')")
+            d = _sanitize(district)
+            conds.append(f"LOWER(district) LIKE LOWER('%{d}%')")
         if crime_type:
-            conds.append(f"(LOWER(crime_group) LIKE LOWER('%{crime_type}%') OR LOWER(crime_head) LIKE LOWER('%{crime_type}%'))")
+            ct = _sanitize(crime_type)
+            conds.append(f"(LOWER(crime_group) LIKE LOWER('%{ct}%') OR LOWER(crime_head) LIKE LOWER('%{ct}%'))")
         if year:
-            conds.append(f"year = {year}")
+            conds.append(f"year = {int(year)}")
         where = " AND ".join(conds)
 
         try:
@@ -466,11 +484,13 @@ class CrimeDataEngine:
                          year: Optional[int] = None) -> QueryResult:
         conds = ["district IS NOT NULL", "crime_group IS NOT NULL"]
         if district:
-            conds.append(f"LOWER(district) LIKE LOWER('%{district}%')")
+            d = _sanitize(district)
+            conds.append(f"LOWER(district) LIKE LOWER('%{d}%')")
         if crime_type:
-            conds.append(f"(LOWER(crime_group) LIKE LOWER('%{crime_type}%') OR LOWER(crime_head) LIKE LOWER('%{crime_type}%'))")
+            ct = _sanitize(crime_type)
+            conds.append(f"(LOWER(crime_group) LIKE LOWER('%{ct}%') OR LOWER(crime_head) LIKE LOWER('%{ct}%'))")
         if year:
-            conds.append(f"year = {year}")
+            conds.append(f"year = {int(year)}")
         where = " AND ".join(conds)
 
         try:
@@ -512,11 +532,13 @@ class CrimeDataEngine:
                      year: Optional[int] = None) -> QueryResult:
         conds = ["lat IS NOT NULL", "lon IS NOT NULL", "lat BETWEEN 11.0 AND 19.0", "lon BETWEEN 74.0 AND 79.0"]
         if district:
-            conds.append(f"LOWER(district) LIKE LOWER('%{district}%')")
+            d = _sanitize(district)
+            conds.append(f"LOWER(district) LIKE LOWER('%{d}%')")
         if crime_type:
-            conds.append(f"(LOWER(crime_group) LIKE LOWER('%{crime_type}%') OR LOWER(crime_head) LIKE LOWER('%{crime_type}%'))")
+            ct = _sanitize(crime_type)
+            conds.append(f"(LOWER(crime_group) LIKE LOWER('%{ct}%') OR LOWER(crime_head) LIKE LOWER('%{ct}%'))")
         if year:
-            conds.append(f"year = {year}")
+            conds.append(f"year = {int(year)}")
         where = " AND ".join(conds)
 
         try:
@@ -566,9 +588,11 @@ class CrimeDataEngine:
                            district: Optional[str] = None) -> QueryResult:
         conds = ["1=1"]
         if crime_type:
-            conds.append(f"(LOWER(crime_group) LIKE LOWER('%{crime_type}%') OR LOWER(crime_head) LIKE LOWER('%{crime_type}%'))")
+            ct = _sanitize(crime_type)
+            conds.append(f"(LOWER(crime_group) LIKE LOWER('%{ct}%') OR LOWER(crime_head) LIKE LOWER('%{ct}%'))")
         if district:
-            conds.append(f"LOWER(district) LIKE LOWER('%{district}%')")
+            d = _sanitize(district)
+            conds.append(f"LOWER(district) LIKE LOWER('%{d}%')")
         where = " AND ".join(conds)
 
         try:
@@ -634,15 +658,18 @@ class CrimeDataEngine:
                   limit: int = 50) -> QueryResult:
         conds = ["1=1"]
         if district:
-            conds.append(f"LOWER(district) LIKE LOWER('%{district}%')")
+            d = _sanitize(district)
+            conds.append(f"LOWER(district) LIKE LOWER('%{d}%')")
         if crime_type:
-            conds.append(f"(LOWER(crime_group) LIKE LOWER('%{crime_type}%') OR LOWER(crime_head) LIKE LOWER('%{crime_type}%'))")
+            ct = _sanitize(crime_type)
+            conds.append(f"(LOWER(crime_group) LIKE LOWER('%{ct}%') OR LOWER(crime_head) LIKE LOWER('%{ct}%'))")
         if year_start:
-            conds.append(f"year >= {year_start}")
+            conds.append(f"year >= {int(year_start)}")
         if year_end:
-            conds.append(f"year <= {year_end}")
+            conds.append(f"year <= {int(year_end)}")
         if month:
-            conds.append(f"month = {month}")
+            conds.append(f"month = {int(month)}")
+        limit = min(int(limit), 200)
         where = " AND ".join(conds)
 
         try:
