@@ -16,6 +16,9 @@ from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from pydantic import BaseModel
 from dotenv import load_dotenv
 
+import sys
+sys.path.insert(0, os.path.dirname(__file__))
+
 from data_engine import CrimeDataEngine, QueryResult
 from nlp_engine  import NLPEngine, QueryIntent
 from auth        import AuthManager
