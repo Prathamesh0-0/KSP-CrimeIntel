@@ -1,0 +1,21 @@
+version: 1.0
+pipeline-when:
+  equal:
+    - "<< event.ref >>"
+    - "refs/heads/main"
+
+stages:
+  - name: deploy_stage
+    jobs:
+      - deploy_backend
+
+jobs:
+  deploy_backend:
+    steps:
+      - pip install -r requirements.txt
+      - deploy:
+          target: appsail
+          config:
+            name: backend
+            runtime: python3.11
+            startup_command: python backend/main.py
