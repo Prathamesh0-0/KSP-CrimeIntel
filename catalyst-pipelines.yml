@@ -16,4 +16,4 @@ jobs:
       - >-
         catalyst deploy appsail --name backend --build-path "."
         --stack python_3_11 --command "python backend/main.py"
-        --verbose
+        --token "<< global.CATALYST_TOKEN >>" --verbose
