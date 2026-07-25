@@ -465,29 +465,131 @@ async def _route_query(intent: QueryIntent) -> QueryResult:
     return data_engine.get_hotspots(crime_type=crime, year=intent.year_start)
 
 
+def _generate_narrative_explanation(intent: QueryIntent, result: QueryResult) -> str:
+    if not result.data:
+        return result.summary or "No data available for analysis."
+
+    district = intent.districts[0].title() if intent.districts else "Karnataka"
+    crime    = intent.crime_types[0].title() if intent.crime_types else "All Crimes"
+
+    narrative = []
+    data = result.data
+
+    if isinstance(data, list) and len(data) > 0:
+        # Case 1: Hotspots & District Comparisons
+        if "district" in data[0] and "cases" in data[0]:
+            top1 = data[0]
+            top2 = data[1] if len(data) > 1 else None
+            total_cases = sum(r.get("cases", 0) for r in data if isinstance(r, dict))
+
+            narrative.append(f"Analysis of **{crime}** records across **{district}** reveals significant geographical clustering:\n")
+            narrative.append(f"• **Primary Hotspot**: **{top1['district']}** records the highest volume with **{top1['cases']:,} cases**.")
+            if top2:
+                narrative.append(f"• **Secondary Hotspot**: **{top2['district']}** follows with **{top2['cases']:,} cases**.")
+            
+            narrative.append(f"• **Cumulative Total**: The top districts account for a total of **{total_cases:,} registered cases** in this category.")
+
+            if "convictions" in top1 and top1.get("convictions"):
+                narrative.append(f"• **Justice Metrics**: **{top1['district']}** recorded **{top1['convictions']:,} convictions**.")
+
+            narrative.append("\n**Actionable Police Intelligence & Recommendations**:")
+            narrative.append(f"1. **Beat Intensification**: Deploy high-visibility beat patrols and night checkpoints in **{top1['district']}**.")
+            narrative.append(f"2. **Targeted Investigation**: Establish specialized task forces for **{crime}** in high-incident zones.")
+
+        # Case 2: Temporal Trends (Yearly)
+        elif "year" in data[0] and "cases" in data[0]:
+            first_yr = data[0]
+            last_yr  = data[-1]
+            diff     = last_yr['cases'] - first_yr['cases']
+            pct      = round((diff / max(1, first_yr['cases'])) * 100, 1)
+            direction = "an increase" if diff > 0 else "a reduction"
+
+            narrative.append(f"Multi-year trend analysis for **{crime}** in **{district}** ({first_yr['year']}–{last_yr['year']}):\n")
+            narrative.append(f"• **Baseline ({first_yr['year']})**: **{first_yr['cases']:,} cases**.")
+            narrative.append(f"• **Latest ({last_yr['year']})**: **{last_yr['cases']:,} cases** ({direction} of **{abs(pct)}%**).")
+
+            peak = max(data, key=lambda x: x.get('cases', 0))
+            narrative.append(f"• **Peak Surge Year**: Highest recorded volume was in **{peak['year']}** with **{peak['cases']:,} cases**.")
+
+            narrative.append("\n**Strategic Assessment**:")
+            narrative.append(f"1. Audit operational interventions deployed between {peak['year']} and {last_yr['year']}.")
+            narrative.append(f"2. Pre-empt seasonal surges by reinforcing station strength ahead of annual peak periods.")
+
+        # Case 3: Crime Breakdown
+        elif "crime_group" in data[0] and "cases" in data[0]:
+            top1 = data[0]
+            top2 = data[1] if len(data) > 1 else None
+
+            narrative.append(f"Categorical breakdown of crime groups in **{district}**:\n")
+            narrative.append(f"• **Dominant Category**: **{top1['crime_group'].title()}** accounts for **{top1['cases']:,} cases** ({top1.get('pct', 0)}% of total).")
+            if top2:
+                narrative.append(f"• **Secondary Category**: **{top2['crime_group'].title()}** accounts for **{top2['cases']:,} cases** ({top2.get('pct', 0)}%).")
+
+            narrative.append("\n**Operational Focus**:")
+            narrative.append(f"1. Direct investigative resources toward **{top1['crime_group'].title()}** preventative action.")
+            narrative.append("2. Initiate public safety and awareness campaigns in vulnerable station limits.")
+
+        # Case 4: Monthly Patterns
+        elif "month" in data[0] and "cases" in data[0]:
+            peak_m = max(data, key=lambda x: x.get('cases', 0))
+            low_m  = min(data, key=lambda x: x.get('cases', 0))
+
+            narrative.append(f"Seasonal monthly variation analysis for **{crime}** in **{district}**:\n")
+            narrative.append(f"• **Peak Surge Month**: **{peak_m['month']}** experiences maximum incident frequency with **{peak_m['cases']:,} cases**.")
+            narrative.append(f"• **Lowest Incident Month**: **{low_m['month']}** registers **{low_m['cases']:,} cases**.")
+
+            narrative.append("\n**Deployment Recommendations**:")
+            narrative.append(f"1. Pre-position Quick Reaction Teams (QRT) ahead of peak activity in **{peak_m['month']}**.")
+            narrative.append(f"2. Align station personnel leave schedules away from peak surge months.")
+
+        # Case 5: Demographics
+        elif "category" in data[0] and "count" in data[0]:
+            narrative.append(f"Demographic profile for **{crime}** in **{district}**:\n")
+            for item in data[:4]:
+                narrative.append(f"• **{item['category']}**: **{item['count']:,}** registered individuals.")
+
+            narrative.append("\n**Victim Support & Protection Measures**:")
+            narrative.append("1. Coordinate with District Legal Services Authority (DLSA) for immediate victim counseling and assistance.")
+            narrative.append("2. Ensure mandatory fast-track chargesheeting for offences against vulnerable individuals.")
+
+        else:
+            narrative.append(f"{result.summary}")
+    else:
+        narrative.append(f"{result.summary}")
+
+    return "\n".join(narrative)
+
+
 def _build_response_text(intent: QueryIntent, result: QueryResult) -> str:
     if not result.data and result.total_rows == 0:
         return ("No records found for your query. Try adjusting the district name, "
                 "crime type, or year range. Type **'help'** to see example queries.")
 
-    district = intent.districts[0]   if intent.districts   else "Karnataka"
-    crime    = intent.crime_types[0] if intent.crime_types else "all crimes"
+    district = intent.districts[0].title() if intent.districts else "Karnataka"
+    crime    = intent.crime_types[0].title() if intent.crime_types else "All Crimes"
+    narrative = _generate_narrative_explanation(intent, result)
 
-    templates = {
-        "hotspot":    f"**Crime Hotspot Analysis** — {crime.title()} in {district}\n\n{result.summary}",
-        "trend":      f"**Temporal Trend Analysis** — {crime.title()} in {district}\n\n{result.summary}",
-        "compare":    f"**District Comparison** — {crime.title()} ranking\n\n{result.summary}",
-        "predict":    f"**Predictive Intelligence** — {crime.title()} forecast\n\n{result.summary}\n\n> ⚠ Predictions are based on linear regression of historical FIR data. Use as decision support, not ground truth.",
-        "network":    f"**Criminal Pattern Network** — district ↔ crime connections\n\n{result.summary}",
-        "profile":    f"**Crime Profile** — {district}\n\n{result.summary}",
-        "socio":      f"**Socioeconomic Correlation** — how poverty, literacy & GDP relate to crime\n\n{result.summary}",
-        "victim":     f"**Victim/Accused Profile** — {crime.title()} demographics\n\n{result.summary}",
-        "conviction": f"**Justice Performance Metrics** — conviction & chargesheet rates\n\n{result.summary}",
-        "monthly":    f"**Seasonal Crime Pattern** — monthly distribution of {crime.title()}\n\n{result.summary}",
-        "detail":     f"**FIR Records** — {result.total_rows:,} cases found\n\n{result.summary}",
-        "general":    f"**Crime Intelligence Query**\n\n{result.summary}",
+    headers = {
+        "hotspot":    f"### 📍 Crime Hotspot Analysis — {crime} in {district}",
+        "trend":      f"### 📈 Temporal Trend Analysis — {crime} in {district}",
+        "compare":    f"### 📊 District Comparison — {crime} Ranking",
+        "predict":    f"### 🔮 Predictive Intelligence — {crime} Forecast",
+        "network":    f"### 🕸️ Criminal Pattern Network — {district}",
+        "profile":    f"### 📋 Crime Profile — {district}",
+        "socio":      f"### 🌐 Socioeconomic Correlation Analysis",
+        "victim":     f"### 👥 Victim & Accused Demographic Profile",
+        "conviction": f"### ⚖️ Justice Performance & Conviction Metrics",
+        "monthly":    f"### 🗓️ Seasonal Crime Pattern — {crime}",
+        "detail":     f"### 📑 FIR Record Search — {result.total_rows:,} Cases Found",
+        "general":    f"### 🔎 Crime Intelligence Summary",
     }
-    return templates.get(intent.intent, f"**Results**\n\n{result.summary}")
+    header = headers.get(intent.intent, f"### Crime Intelligence Analysis")
+
+    disclaimer = ""
+    if intent.intent == "predict":
+        disclaimer = "\n\n> ⚠ *Predictions are generated via statistical regression on historical FIR records (2016–2023). Use as strategic decision support.*"
+
+    return f"{header}\n\n{narrative}{disclaimer}"
 
 
 def _get_sources(intent: QueryIntent) -> List[str]:
