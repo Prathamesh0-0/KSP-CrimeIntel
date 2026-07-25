@@ -1,5 +1,4 @@
 {
-  "project_name": "crime-intel",
   "client": {
     "source": "frontend/dist"
   },

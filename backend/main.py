@@ -501,4 +501,8 @@ def _get_sources(intent: QueryIntent) -> List[str]:
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
+    import sys
+    sys.path.insert(0, os.path.dirname(__file__))
+    port = int(os.getenv("X_ZOHO_CATALYST_LISTEN_PORT", os.getenv("PORT", "8000")))
+    logger.info(f"Starting server on 0.0.0.0:{port}...")
+    uvicorn.run("main:app", host="0.0.0.0", port=port)
