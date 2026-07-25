@@ -1,8 +1,4 @@
 version: 1.0
-pipeline-when:
-  equal:
-    - "<< event.ref >>"
-    - "refs/heads/main"
 
 stages:
   - name: deploy_stage
