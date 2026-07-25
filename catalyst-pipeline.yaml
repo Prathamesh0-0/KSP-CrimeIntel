@@ -12,6 +12,7 @@ stages:
 jobs:
   deploy_backend:
     steps:
+      - npm install -g zcatalyst-cli
       - >-
         catalyst deploy appsail --name backend --build-path "."
         --stack python_3_11 --command "python backend/main.py"
