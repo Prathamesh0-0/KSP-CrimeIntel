@@ -2,37 +2,13 @@
 
 import os
 import jwt
+import hashlib
 from datetime import datetime, timedelta, timezone
 from typing import Optional, Dict
 
 SECRET_KEY  = os.getenv("JWT_SECRET", "ksp-crimeintel-secret-2026-very-secure-32-byte-key")
 ALGORITHM   = "HS256"
 TOKEN_TTL   = 480   # minutes (8 hours)
-
-# Demo credential store — replace with DB in production
-USERS: Dict[str, Dict] = {
-    "admin": {
-        "password": "admin",
-        "role": "admin",
-        "name": "System Administrator",
-        "badge": "ADMIN-001",
-        "permissions": ["read", "write", "export", "admin"],
-    },
-    "investigator": {
-        "password": "invest123",
-        "role": "investigator",
-        "name": "Inspector R. Kumar",
-        "badge": "INV-1234",
-        "permissions": ["read", "export"],
-    },
-    "analyst": {
-        "password": "analyst123",
-        "role": "analyst",
-        "name": "Sr. Analyst S. Nair",
-        "badge": "ANL-5678",
-        "permissions": ["read", "export"],
-    },
-}
 
 
 class AuthManager:
@@ -42,33 +18,51 @@ class AuthManager:
     def authenticate(self, username: str, password: str) -> Optional[Dict]:
         if not self.db:
             return None
-        user = self.db.conn.execute("SELECT id, username, password_hash, role, badge FROM users WHERE username = ?", (username.lower(),)).fetchone()
-        if not user or user[2] != password:
+
+        u_clean = username.strip().lower()
+        # Query by either Username or User ID (e.g. USR-A1B2C3)
+        user = self.db.conn.execute(
+            "SELECT id, username, password_hash, role, badge FROM users WHERE LOWER(username) = ? OR LOWER(id) = ?",
+            (u_clean, u_clean)
+        ).fetchone()
+
+        if not user:
             return None
-        
-        # Permissions mapping based on role
+
+        stored_pw = user[2]
+        input_hash = hashlib.sha256(password.encode()).hexdigest()
+
+        # Support both hashed passwords and legacy plaintext passwords
+        if stored_pw != password and stored_pw != input_hash:
+            return None
+
+        user_id = user[0]
+        uname   = user[1]
+        role    = user[3]
+        badge   = user[4]
+
         permissions = ["read", "export"]
-        if user[3] == "admin":
-            permissions.append("admin")
-            permissions.append("write")
-            
+        if role == "admin":
+            permissions.extend(["admin", "write"])
+
         payload = {
-            "sub":  username,
-            "role": user[3],
-            "badge": user[4],
-            "name": username.title(),
-            "exp":  datetime.now(timezone.utc) + timedelta(minutes=TOKEN_TTL),
+            "sub":   uname,
+            "id":    user_id,
+            "role":  role,
+            "badge": badge,
+            "name":  uname.title(),
+            "exp":   datetime.now(timezone.utc) + timedelta(minutes=TOKEN_TTL),
         }
         token = jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
         return {
             "access_token": token,
             "token_type":   "bearer",
             "user": {
-                "id":          user[0],
-                "username":    user[1],
-                "role":        user[3],
-                "name":        username.title(),
-                "badge":       user[4],
+                "id":          user_id,
+                "username":    uname,
+                "role":        role,
+                "name":        uname.title(),
+                "badge":       badge,
                 "permissions": permissions,
             },
         }
@@ -77,16 +71,20 @@ class AuthManager:
         try:
             payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
             username = payload.get("sub")
-            if not username: return None
-            
-            # Optionally query DB again to ensure user still exists
-            user = self.db.conn.execute("SELECT id, username, role, badge FROM users WHERE username = ?", (username,)).fetchone()
-            if not user: return None
-            
+            if not username:
+                return None
+
+            user = self.db.conn.execute(
+                "SELECT id, username, role, badge FROM users WHERE LOWER(username) = ? OR LOWER(id) = ?",
+                (username.lower(), username.lower())
+            ).fetchone()
+            if not user:
+                return None
+
             permissions = ["read", "export"]
             if user[2] == "admin":
                 permissions.extend(["admin", "write"])
-                
+
             return {
                 "id":          user[0],
                 "username":    user[1],
