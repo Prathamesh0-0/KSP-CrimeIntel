@@ -4,6 +4,8 @@ pipeline-when:
     - "<< event.ref >>"
     - "refs/heads/main"
 
+pipeline-image: "python:3.11"
+
 stages:
   - name: deploy_stage
     jobs:
@@ -12,5 +14,5 @@ stages:
 jobs:
   deploy_backend:
     steps:
-      - pip install -r requirements.txt
+      - python3 -m pip install -r requirements.txt
       - catalyst deploy --only appsail
