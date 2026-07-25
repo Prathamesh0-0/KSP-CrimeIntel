@@ -649,11 +649,12 @@ input, textarea, select { font-family: inherit; }
 /* Sources */
 .sources-row { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
 .source-chip {
-  font-size: 9px; padding: 1px 6px;
-  background: var(--bg-overlay);
-  border: 1px solid var(--border);
+  font-size: 10px; padding: 2px 8px;
+  background: #e2e8f0;
+  border: 1px solid #cbd5e1;
   border-radius: var(--r-sm);
-  color: var(--text-muted);
+  color: #0f172a;
+  font-weight: 500;
 }
 
 /* ─── Chat Input ──────────────────────────────────────────────── */
