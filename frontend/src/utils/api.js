@@ -1,7 +1,7 @@
 // API client for KSP CrimeIntel backend
 import axios from 'axios'
 
-const BASE = (import.meta.env.VITE_API_URL || '/api').replace(/\/$/, '')
+const BASE = (import.meta.env.VITE_API_URL || 'https://ksp-crimeintel.onrender.com/api').replace(/\/$/, '')
 
 const api = axios.create({ baseURL: BASE, timeout: 60000 })
 
