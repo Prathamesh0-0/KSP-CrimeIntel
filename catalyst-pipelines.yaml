@@ -4,10 +4,13 @@ pipeline-when:
     - "<< event.ref >>"
     - "refs/heads/main"
 
-pipeline-image: "python:3.11"
+images:
+  python_env:
+    image: "python:3.11"
 
 stages:
   - name: deploy_stage
+    image: python_env
     jobs:
       - deploy_backend
 
