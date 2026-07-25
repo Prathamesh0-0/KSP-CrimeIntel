@@ -4,18 +4,15 @@ pipeline-when:
     - "<< event.ref >>"
     - "refs/heads/main"
 
-images:
-  python_env:
-    image: "python:3.11"
-
 stages:
   - name: deploy_stage
-    image: python_env
     jobs:
       - deploy_backend
 
 jobs:
   deploy_backend:
     steps:
-      - python3 -m pip install -r requirements.txt
-      - catalyst deploy --only appsail
+      - >-
+        catalyst deploy appsail --name backend --build-path "."
+        --stack python_3_11 --command "python backend/main.py"
+        --verbose
