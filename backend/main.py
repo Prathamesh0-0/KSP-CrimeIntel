@@ -50,8 +50,14 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-DEFAULT_DATA_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "DataSet"))
-DATA_DIR = os.getenv("DATA_DIR", DEFAULT_DATA_DIR)
+possible_data_dirs = [
+    os.getenv("DATA_DIR"),
+    os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "DataSet")),
+    os.path.abspath(os.path.join(os.path.dirname(__file__), "DataSet")),
+    os.path.abspath("./DataSet"),
+    os.path.abspath("../DataSet"),
+]
+DATA_DIR = next((d for d in possible_data_dirs if d and os.path.exists(d)), possible_data_dirs[1])
 
 logger.info("Initialising data engine — may take 20-40 s for first-time CSV indexing …")
 data_engine  = CrimeDataEngine(DATA_DIR)
