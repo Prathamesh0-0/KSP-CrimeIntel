@@ -23,7 +23,8 @@ from data_engine import CrimeDataEngine, QueryResult
 from nlp_engine  import NLPEngine, QueryIntent
 from auth        import AuthManager
 
-load_dotenv()
+env_path = os.path.join(os.path.dirname(__file__), ".env")
+load_dotenv(env_path)
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(name)s — %(message)s",

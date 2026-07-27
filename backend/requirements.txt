@@ -5,7 +5,7 @@ duckdb
 pydantic
 PyJWT
 python-multipart
-google-generativeai
+google-genai
 numpy
 python-dotenv
 aiofiles

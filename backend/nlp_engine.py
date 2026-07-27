@@ -21,21 +21,21 @@ CRIME_MAP = {
     "theft":        ["theft", "steal", "stolen", "larceny", "ಕಳ್ಳತನ"],
     "robbery":      ["robbery", "dacoity", "dacoit", "loot", "armed robbery"],
     "burglary":     ["burglary", "house breaking", "break-in", "breaking"],
-    "auto_theft":   ["auto theft", "vehicle theft", "car theft", "bike theft", "motor cycle"],
+    "auto_theft":   ["auto theft", "vehicle theft", "car theft", "bike", "motor cycle"],
     "kidnapping":   ["kidnap", "abduction", "abducted", "missing child", "ಅಪಹರಣ"],
     "fraud":        ["fraud", "cheating", "scam", "financial crime", "embezzlement", "ಮೋಸ"],
-    "cyber":        ["cyber crime", "online fraud", "phishing", "hacking", "digital crime"],
+    "cyber":        ["cyber", "online fraud", "phishing", "hacking", "digital crime"],
     "dowry":        ["dowry", "dowry death", "dowry harassment", "ವರದಕ್ಷಿಣೆ"],
     "assault":      ["assault", "hurt", "grievous hurt", "attack", "battery"],
-    "drug":         ["drug", "narcotics", "ndps", "drug trafficking", "ganja", "heroin"],
+    "drug":         ["drug", "narcotics", "ndps", "trafficking", "ganja", "heroin"],
     "gambling":     ["gambling", "matka", "betting", "gaming"],
-    "traffic":      ["traffic", "road accident", "rash driving", "motor vehicle accident", "hit and run"],
+    "traffic":      ["traffic", "road accident", "rash driving", "accident", "hit and run"],
     "corruption":   ["corruption", "bribery", "bribe", "anti-corruption"],
     "riot":         ["riot", "communal", "mob violence", "unlawful assembly"],
-    "women":        ["crime against women", "women crime", "ಮಹಿಳೆ", "gender based"],
-    "children":     ["crime against children", "children crime", "minor", "juvenile"],
-    "property":     ["property dispute", "property crime", "land dispute"],
-    "arson":        ["arson", "fire", "burning property"],
+    "women":        ["women", "ಮಹಿಳೆ", "gender based"],
+    "children":     ["children", "minor", "juvenile"],
+    "property":     ["property"],
+    "arson":        ["arson", "fire", "burning"],
 }
 
 DISTRICT_LIST = [
@@ -189,7 +189,7 @@ monthly=seasonal patterns, detail=specific case counts/listings, general=fallbac
                 break
 
         # crime types
-        crimes = [k for k, v in CRIME_MAP.items() if any(c in ql for c in v)]
+        crimes = [k for k, v in CRIME_MAP.items() if any(re.search(rf"\b{re.escape(c)}\b", ql) for c in v)]
         dists  = [d.title() for d in DISTRICT_LIST if d in ql]
 
         # years
