@@ -21,7 +21,7 @@ ENV PORT=8000
 ENV DATA_DIR=/app/DataSet
 
 # Expose the port (informative, Railway overrides it if needed)
-EXPOSE $PORT
+EXPOSE 8000
 
 # Run the FastAPI server
 CMD ["python", "backend/main.py"]
