@@ -252,6 +252,38 @@ export default function LoginPage() {
             >
               {loading ? 'Signing in…' : 'Sign In'}
             </button>
+
+            {/* Quick Admin Auto-fill Button */}
+            <button
+              type="button"
+              onClick={() => {
+                setUsername('admin')
+                setPassword('admin')
+                setError('')
+              }}
+              style={{
+                width: '100%',
+                padding: '11px',
+                background: '#e8eaf6',
+                color: '#1a237e',
+                border: '1.5px dashed #3f51b5',
+                borderRadius: '6px',
+                fontSize: '13px',
+                fontWeight: 600,
+                cursor: 'pointer',
+                transition: 'all 0.2s',
+                marginTop: '8px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '6px',
+              }}
+              onMouseEnter={e => { e.target.style.background = '#c5cae9' }}
+              onMouseLeave={e => { e.target.style.background = '#e8eaf6' }}
+            >
+              <Shield size={14} />
+              <span>Auto-fill Admin Credentials (admin / admin)</span>
+            </button>
           </form>
         </div>
 
