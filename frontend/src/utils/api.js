@@ -1,7 +1,7 @@
 // API client for KSP CrimeIntel backend
 import axios from 'axios'
 
-const BASE = (import.meta.env.VITE_API_URL || 'https://backend-50044331540.development.catalystappsail.in/api').replace(/\/$/, '')
+const BASE = (import.meta.env.VITE_API_URL || 'https://web-production-e4222.up.railway.app/api').replace(/\/$/, '')
 
 const api = axios.create({ baseURL: BASE, timeout: 60000 })
 
